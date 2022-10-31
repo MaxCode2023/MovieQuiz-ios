@@ -10,7 +10,7 @@ import UIKit
 
 final class MovieQuizPresenter: QuestionFactoryDelegate {
     
-    private weak var viewController: MovieQuizViewController?
+    private weak var viewController: MovieQuizViewControllerProtocol?
     
     private var currentQuestionIndex = 0
     private var currentQuestion: QuizQuestion?
@@ -22,7 +22,7 @@ final class MovieQuizPresenter: QuestionFactoryDelegate {
     private var questionFactory: QuestionFactoryProtocol?
     private let statisticService: StatisticService = StatisticServiceImplementation()
     
-    init(viewController: MovieQuizViewController) {
+    init(viewController: MovieQuizViewControllerProtocol) {
         self.viewController = viewController
         
         questionFactory = QuestionFactory(moviesLoader: moviesLoader, delegate: self)
@@ -96,6 +96,13 @@ final class MovieQuizPresenter: QuestionFactoryDelegate {
         }
     }
     
+    func convert(model: QuizQuestion) -> QuizStepViewModel {
+        return QuizStepViewModel(
+            image: UIImage(data: model.image) ?? UIImage(),
+            question: model.text,
+            questionNumber: "\(currentQuestionIndex + 1)/\(questionsAmount)")
+    }
+    
     func asyncWaitSecond(onCompletion: @escaping () -> Void) {
         DispatchQueue.main.asyncAfter(deadline: .now() + 1.0) {
             onCompletion()
@@ -107,13 +114,6 @@ final class MovieQuizPresenter: QuestionFactoryDelegate {
             return
         }
         viewController?.showAnswerResult(isCorrect: currentQuestion.correctAnswer == isYes)
-    }
-    
-    private func convert(model: QuizQuestion) -> QuizStepViewModel {
-        return QuizStepViewModel(
-            image: UIImage(data: model.image) ?? UIImage(),
-            question: model.text,
-            questionNumber: "\(currentQuestionIndex + 1)/\(questionsAmount)")
     }
     
     private func isLastQuestion() -> Bool {
